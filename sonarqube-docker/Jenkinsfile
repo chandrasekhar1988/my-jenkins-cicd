@@ -1,0 +1,51 @@
+pipeline {
+    agent any
+
+    environment {
+        // సోనార్‌క్యూబ్ సర్వర్ పేరు (Jenkins UI లో కాన్ఫిగర్ చేస్తాం)
+        SONAR_SERVER_NAME = 'SonarQube-Server'
+    }
+
+    stages {
+        stage('1. Checkout Code') {
+            steps {
+                // గిట్‌హబ్ నుండి కోడ్‌ను జెంకిన్స్ లోకి డౌన్‌లోడ్ చేస్తుంది
+                checkout scm;
+            }
+        }
+
+        stage('2. SonarQube Analysis') {
+            steps {
+                // ఈ బ్లాక్ సోనార్‌క్యూబ్ సర్వర్‌కు కనెక్ట్ అవ్వడానికి హెల్ప్ చేస్తుంది
+                withSonarQubeEnv("${SONAR_SERVER_NAME}") {
+                    // సోనార్ స్కానర్‌ను రన్ చేసి మన app.py ని స్కాన్ చేస్తుంది
+                    sh 'sonar-scanner -Dsonar.projectKey=MyPythonApp -Dsonar.sources=.'
+                }
+            }
+        }
+
+        stage('3. Quality Gate Check') {
+            steps {
+                // సోనార్‌క్యూబ్ రిజల్ట్ (PASS/FAIL) ఇచ్చే వరకు జెంకిన్స్ ఇక్కడ వెయిట్ చేస్తుంది
+                timeout(time: 5, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
+        
+        stage('4. Deploy to Production') {
+            steps {
+                // క్వాలిటీ గేట్ పాస్ అయితేనే ఈ స్టేజ్ రన్ అవుతుంది
+                echo 'క్వాలిటీ గేట్ పాస్ అయింది! కోడ్‌ను సర్వర్‌లోకి డిప్లాయ్ చేస్తున్నాము...'
+            }
+        }
+    }
+
+    post {
+        failure {
+            // క్వాలిటీ గేట్ ఫెయిల్ అయినా, మరే తప్పు జరిగినా డెవలపర్‌కు అలర్ట్ వెళ్తుంది
+            echo '❌ బిల్డ్ ఫెయిల్ అయింది! క్వాలిటీ గేట్ రూల్స్ బ్రేక్ అయ్యాయి. డెవలపర్‌కు మెయిల్ వెళ్తోంది...'
+            // ఇక్కడ మనం Email లేదా Slack నోటిఫికేషన్ కోడ్ రాస్తాం
+        }
+    }
+}
