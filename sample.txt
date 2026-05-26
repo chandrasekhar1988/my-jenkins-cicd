@@ -1,2 +1,4 @@
 Hello Jenkins! This is my first CI/CD project.
 Today I am learning about the delivery pipeline.
+Iam adding Newline To test POLL SCM 
+to check whether 1 minute new build started without touching anything manually
