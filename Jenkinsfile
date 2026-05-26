@@ -35,4 +35,21 @@ pipeline {
             }
         }
     }
+
+    // Post-execution block starts here
+    post {
+        success {
+            echo 'Build succeeded! Sending success email to the manager...'
+            mail to: 'chandrasekhar.maroju@gmail.com',
+                 subject: "SUCCESS: Job '${env.JOB_NAME}' [Build #${env.BUILD_NUMBER}]",
+                 body: "Hello Manager,\n\nOur project build completed successfully (PASSED).\n\nTo view the build details, please click here: ${env.BUILD_URL}\n\nRegards,\nJenkins Automation Robot"
+        }
+        
+        failure {
+            echo 'Build failed! Sending alert email to the manager...'
+            mail to: 'chandrasekhar.maroju@gmail.com',
+                 subject: "FAILURE: Job '${env.JOB_NAME}' [Build #${env.BUILD_NUMBER}]",
+                 body: "Hello Manager,\n\nOur project build has failed (FAILED). Please investigate immediately.\n\nTo view the error details, check the console output here: ${env.BUILD_URL}console\n\nRegards,\nJenkins Automation Robot"
+        }
+    }
 }
