@@ -2,24 +2,36 @@ pipeline {
     agent any
 
     stages {
-        stage('First Step - Initialization') {
+        stage('1. Checkout') {
             steps {
-                echo 'Jenkins pipeline has just started...'
+                echo 'Fetching the latest code from GitHub...'
+                // Since we connected Git in Jenkins, this happens automatically
             }
         }
 
-        stage('Second Step - Read File') {
+        stage('2. Build') {
             steps {
-                echo 'Now checking the created sample.txt file...'
-                // Using 'bat' command to view file contents in Windows
+                echo 'Software build process has started...'
+                echo 'Checking application version:'
                 bat 'type sample.txt'
             }
         }
 
-        stage('Third Step - Build & Execute') {
+        stage('3. Test') {
             steps {
-                echo 'Awesome! Your build completed successfully.'
-                echo 'Software delivery process success!'
+                echo 'Running automated testing...'
+                bat 'type test.txt'
+                
+                echo 'Verifying test results...'
+                // This command searches for "STATUS=PASS" in test.txt. It will fail if not found.
+                bat 'findstr "STATUS=PASS" test.txt'
+            }
+        }
+
+        stage('4. Deploy') {
+            steps {
+                echo 'Testing successful! Deploying code to the production server...'
+                echo 'Congratulations! Your app is now live.'
             }
         }
     }
